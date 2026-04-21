@@ -8,16 +8,23 @@ steps:
 
 - checkout: self
 
-- task: TerraformInstaller@1
-  inputs:
-    terraformVersion: 'latest'
-
 - task: AzureCLI@2
+  displayName: 'Install Terraform and Deploy'
   inputs:
-    azureSubscription: 'azure-conn'
+    azureSubscription: 'azure-conn'   # ✅ your service connection
     scriptType: 'bash'
     scriptLocation: 'inlineScript'
     inlineScript: |
+      echo "Installing Terraform..."
+
+      curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+      sudo apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+      sudo apt-get update && sudo apt-get install terraform -y
+
+      terraform -version
+
+      echo "Running Terraform..."
+
       terraform init
       terraform validate
       terraform plan -out=tfplan
